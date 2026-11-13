@@ -97,7 +97,7 @@ const scanD=()=>{const ov=document.createElement("div");ov.style.cssText="positi
    const {data:{session},error:sessionError}=await DB.auth.getSession();
    if(sessionError)throw sessionError;
    if(!session||!session.access_token)throw new Error(T("يجب تسجيل دخول المدير أولاً","Beheerder moet eerst inloggen"));
-   const r=await DB.functions.invoke("read-plate",{
+   const r=await DB.functions.invoke("super-processor",{
     body:{image:img,mime:"image/jpeg"},
     headers:{Authorization:`Bearer ${session.access_token}`}
    });if(r.error){let m=r.error.message;try{const b=await r.error.context.text();m+=" | "+b.slice(0,300)}catch(_){}throw new Error(m)}const d=r.data||{};if(d.error)throw new Error(d.error);
