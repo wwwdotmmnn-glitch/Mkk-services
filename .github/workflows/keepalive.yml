@@ -1,0 +1,12 @@
+name: keepalive
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -fsS "https://dfifyheadwrgveamgmlj.supabase.co/rest/v1/site_content?select=k&limit=1" -H "apikey: sb_publishable_G78t4KIqTwKI_5mcqlD7bA_FgoGJ468"
