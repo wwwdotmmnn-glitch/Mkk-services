@@ -153,16 +153,17 @@ const wiz=()=>{const F=R.F,L=devLb(),cs=S.customers,c=cs[F.pick];let h="";
  show(`${hdr("home()")}<div class="bar"><div style="width:${(step+1)*20}%"></div></div>${h}<div class="nav">${step>0?`<button class="o" onclick="step--;wiz()">${T("السابق","Vorige")}</button>`:""}${step<4?`<button onclick="step++;wiz()">${T("التالي","Volgende")}</button>`:""}</div>`);if(step===4)initSig("sigK")};
 const fmt=(y,m,d)=>String(d).padStart(2,"0")+"-"+String(m).padStart(2,"0")+"-"+y,clean=s=>String(s==null?"":s).replace(/[^\x20-\xFF]/g,"?");
 let WAI=null;
-const waBtn=()=>`<button style="background:#25D366;color:#fff;margin-top:8px" onclick="waShare()">💬 ${T("إرسال عبر واتساب","Versturen via WhatsApp")}</button>`;
+const waBtn=()=>`<button style="background:#25D366;color:#fff;margin-top:8px" onclick="waText()">💬 ${T("إرسال النص","Tekst versturen")}</button><button style="background:#25D366;color:#fff;margin-top:8px" onclick="waPdf()">📄 ${T("إرسال ملف PDF","PDF versturen")}</button>`;
 const waPhone=p=>{let d=String(p||"").replace(/[^\d+]/g,"");if(d.startsWith("+"))return d.slice(1).replace(/\D/g,"");d=d.replace(/\D/g,"");if(d.startsWith("00"))return d.slice(2);if(d.startsWith("0"))return "32"+d.slice(1);return d};
-const waShare=async()=>{const w=WAI;if(!w)return;const F=w.F,c=F.pick!==""&&S.customers[+F.pick]?S.customers[+F.pick]:null,
+const waMsg=()=>{const w=WAI,F=w.F,c=F.pick!==""&&S.customers[+F.pick]?S.customers[+F.pick]:null,
  sers=[...new Set([(c?c.devs.map(d=>nk(d.serie)):[]),[w.ser]].flat().filter(s=>s.length>=6))],
- site=location.origin,co=(R.co&&R.co.f_naam)||"Mkk",
- pub=DB.storage.from("certs").getPublicUrl(w.path).data.publicUrl,
- txt=`Beste ${F.k_naam.trim()},\n\nHet ${KL(w.K).toLowerCase()} van uw installatie werd succesvol uitgevoerd op ${w.date}.\n\nUw attest vindt u in bijlage. Het volgende onderhoud is voorzien vóór ${w.next}.\n\nUw attesten kan u op elk moment terugvinden en downloaden op ${site} door het serienummer van uw ketel in te geven: ${sers.join(", ")}\n\nBedankt voor uw vertrouwen! Regelmatig onderhoud verlengt de levensduur van uw ketel, verlaagt uw energiefactuur en houdt uw woning veilig.\n\n${co}`;
+ site=location.origin,co=(R.co&&R.co.f_naam)||"Mkk";
+ return `Beste ${F.k_naam.trim()},\n\nHet ${KL(w.K).toLowerCase()} van uw installatie werd succesvol uitgevoerd op ${w.date}.\n\nUw attest vindt u in bijlage. Het volgende onderhoud is voorzien vóór ${w.next}.\n\nUw attesten kan u op elk moment terugvinden en downloaden op ${site} door het serienummer van uw ketel in te geven: ${sers.join(", ")}\n\nBedankt voor uw vertrouwen! Regelmatig onderhoud verlengt de levensduur van uw ketel, verlaagt uw energiefactuur en houdt uw woning veilig.\n\n${co}`};
+const waText=()=>{const w=WAI;if(!w)return;const ph=waPhone(w.F.k_tel);window.open(`https://wa.me/${ph}?text=${encodeURIComponent(waMsg())}`,"_blank","noopener")};
+const waPdf=async()=>{const w=WAI;if(!w)return;
  try{const file=new File([w.bytes],`${KL(w.K)}_${w.nm}.pdf`,{type:"application/pdf"});
-  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:txt});return}}catch(e){if(e&&e.name==="AbortError")return}
- const ph=waPhone(F.k_tel);window.open(`https://wa.me/${ph}?text=${encodeURIComponent(txt+"\n\n"+pub)}`,"_blank","noopener")};
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});return}}catch(e){if(e&&e.name==="AbortError")return}
+ const pub=DB.storage.from("certs").getPublicUrl(w.path).data.publicUrl,ph=waPhone(w.F.k_tel);window.open(`https://wa.me/${ph}?text=${encodeURIComponent(pub)}`,"_blank","noopener")};
 const makePdf=async()=>{const F=R.F,out=m=>{msg=m;const e=$("#msg");if(e)e.textContent=m};
  try{if(!F.date||!F.k_naam.trim()){out(T("أدخل اسم الزبون والتاريخ","Vul klantnaam en datum in"));return}
   if(nk(F.serie).length<6){out(T("أدخل الرقم التسلسلي للجهاز (6 خانات فأكثر)","Vul het serienummer in (min. 6 tekens)"));return}
