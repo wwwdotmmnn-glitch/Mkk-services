@@ -266,8 +266,19 @@ const sendReq=async()=>{const q=R.rq,m=$("#rm");if(q.hp){reqDone();return}
 let CL=[];
 const openCert=i=>window.open(DB.storage.from("certs").getPublicUrl(CL[i].file_path).data.publicUrl,"_blank","noopener");
 const certsList=async()=>{show(`${hdr("home()")}<h2>${T("الشهادات المحفوظة","Opgeslagen attesten")}</h2><div id="cl">…</div>`);
- const r=await DB.from("certs").select("id,kind,cert_date,cert_no,customer_name,file_path").order("created_at",{ascending:false}).limit(100);
- CL=r.data||[];$("#cl").innerHTML=r.error?esc(r.error.message):CL.length?CL.map((c,i)=>`<div class="it"><b>${esc(c.customer_name||"—")}</b><span>${KL(c.kind)} · ${c.cert_date} · #${esc(c.cert_no)}</span><div class="row" style="justify-content:flex-start;margin-top:8px">${c.file_path?`<button class="o" style="margin:0" onclick="openCert(${i})">${T("فتح","Openen")}</button>`:""}<button class="r" style="margin:0" onclick="delCert(${i})">${T("حذف","Verwijderen")}</button></div></div>`).join(""):`<p class="m">${T("لا توجد شهادات محفوظة","Geen opgeslagen attesten")}</p>`};
+ const r=await DB.from("certs").select("id,kind,cert_date,cert_no,customer_name,file_path,serial_norm").order("created_at",{ascending:false}).limit(100);
+ CL=r.data||[];$("#cl").innerHTML=r.error?esc(r.error.message):CL.length?CL.map((c,i)=>`<div class="it"><b>${esc(c.customer_name||"—")}</b><span>${KL(c.kind)} · ${c.cert_date} · #${esc(c.cert_no)}</span><div class="row" style="justify-content:flex-start;margin-top:8px">${c.file_path?`<button class="o" style="margin:0" onclick="openCert(${i})">${T("فتح","Openen")}</button>`:""}${c.file_path?`<button style="margin:0;background:#25D366;color:#fff" onclick="sendCert(${i})">💬 ${T("إرسال","Versturen")}</button>`:""}<button class="r" style="margin:0" onclick="delCert(${i})">${T("حذف","Verwijderen")}</button></div></div>`).join(""):`<p class="m">${T("لا توجد شهادات محفوظة","Geen opgeslagen attesten")}</p>`};
+const sendCert=async i=>{const c=CL[i];if(!c||!c.file_path)return;
+ const pubUrl=DB.storage.from("certs").getPublicUrl(c.file_path).data.publicUrl;
+ let bytes=null;try{const r=await fetch(pubUrl);if(r.ok)bytes=new Uint8Array(await r.arrayBuffer())}catch(e){}
+ const cu=S.customers.find(x=>norm(x.k_naam)===norm(c.customer_name)),
+  sers=[...new Set([(cu?cu.devs.map(d=>nk(d.serie)):[]),[c.serial_norm||""]].flat().filter(s=>s.length>=6))],
+  dt=c.cert_date.split("-"),y=+dt[0],m=+dt[1],d=+dt[2];
+ WAI={F:{k_naam:c.customer_name||"",k_tel:cu?cu.k_tel:"",pick:cu?String(S.customers.indexOf(cu)):"",serie:sers[0]||""},K:c.kind,bytes:bytes||new Uint8Array(),nm:(c.customer_name||"klant").replace(/[^A-Za-z0-9]+/g,"_"),path:c.file_path,ser:sers[0]||"",date:fmt(y,m,d),next:fmt(y+2,m,d)};
+ const el=$("#wasend");if(el)el.remove();
+ const box=document.createElement("div");box.id="wasend";box.className="it";box.style.borderColor="#25D366";
+ box.innerHTML=`<b>${esc(c.customer_name||"—")}</b><span>${KL(c.kind)} · ${c.cert_date}</span>${cu&&cu.k_tel?"":`<span class="m">${T("لا يوجد رقم هاتف لهذا الزبون، ستختار المحادثة بنفسك","Geen gsm-nummer: kies zelf de chat")}</span>`}${waBtn()}<button class="o" onclick="this.parentNode.remove()">${T("إغلاق","Sluiten")}</button>`;
+ $("#cl").prepend(box);box.scrollIntoView({behavior:"smooth",block:"start"})};
 const delCert=async i=>{const c=CL[i];if(!confirm(T("حذف هذه الشهادة نهائياً؟","Dit attest definitief verwijderen?")))return;
  if(c.file_path){const a=await DB.storage.from("certs").remove([c.file_path]);if(a.error||!a.data||!a.data.length){alert(T("تعذّر حذف الملف، شغّل أمر SQL الخاص بالحذف أولاً","Bestand niet verwijderd: voer eerst de SQL voor verwijderen uit"));return}}
  const b=await DB.from("certs").delete().eq("id",c.id);if(b.error){alert(b.error.message);return}certsList()};
