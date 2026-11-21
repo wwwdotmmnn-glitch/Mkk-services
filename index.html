@@ -177,7 +177,7 @@ const scanD=()=>{const ov=document.createElement("div");ov.style.cssText="positi
     headers:{Authorization:`Bearer ${session.access_token}`}
    });if(r.error){let m=r.error.message;try{const b=await r.error.context.text();m+=" | "+b.slice(0,300)}catch(_){}throw new Error(m)}const d=r.data||{};if(d.error)throw new Error(d.error);
    let n=0;for(const k of DEV){const v=d[k];if(v==null||v==="")continue;R.F[k]=String(v).trim();n++}
-   const bad=pre==="m"&&autoChk(R.F);ov.remove();wiz();alert(T("تمت تعبئة "+n+" حقول، راجعها قبل الحفظ","Ingevuld: "+n+" velden, controleer ze")+(bad?"\n⚠️ "+T("قياس خارج الحد: Niet OK والصيانة القادمة بعد 3 أشهر","Meting buiten de grens: Niet OK, volgend onderhoud binnen 3 maanden"):""))}
+    ov.remove();wiz();alert(T("تمت تعبئة "+n+" حقول، راجعها قبل الحفظ","Ingevuld: "+n+" velden, controleer ze"))}
   catch(e){st.textContent=T("تعذّر التحليل: ","Fout: ")+(e&&e.message||e)}};i.click()};
  bx.querySelector("#sdC").onclick=()=>pick(true);bx.querySelector("#sdG").onclick=()=>pick(false);bx.querySelector("#sdX").onclick=()=>ov.remove()};
 const autoChk=F=>{const n=x=>parseFloat(String(x||"").replace(",",".")),co=n(F.m_co),hi=n(F.m_hi);F.ok=F.ok||{};let b=false;if(!isNaN(co)&&co>150){F.ok.co="nok";b=true}if(!isNaN(hi)&&hi<90){F.ok.hi="nok";b=true}if(b)F.goed="ngoed";return b};
